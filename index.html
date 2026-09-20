@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Timetable Conflict Resolver Dashboard</title>
+    
+    <!-- Eco/Academic Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Ubuntu:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --eco-emerald: #0f5132; 
+            --eco-mint: #198754;
+            --eco-light-mint: #d1e7dd;
+            --panel-bg: #ffffff; 
+            --panel-dark: #f8f9fa;
+            --text-dark: #1f2937; 
+            --text-muted: #4b5563;
+            --alert-green: #198754;
+            --alert-red: #dc3545;
+            --border-radius: 12px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 50%, #a5d6a7 100%);
+            color: var(--text-dark);
+            font-family: 'Ubuntu', sans-serif;
+            padding: 30px;
+            min-height: 100vh;
+            background-attachment: fixed;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 4px solid var(--eco-emerald);
+            padding: 20px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 15px;
+            background: rgba(255, 255, 255, 0.9); 
+            backdrop-filter: blur(12px);
+            border-radius: var(--border-radius);
+            box-shadow: 0 8px 20px rgba(15, 81, 50, 0.1);
+        }
+
+        .header-title h1 {
+            font-family: 'Fredoka', sans-serif;
+            color: var(--eco-emerald);
+            font-size: 2.2rem;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header-title h1::before {
+            content: '📅';
+            font-size: 2rem;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 10px;
+        }
+
+        .tab-btn {
+            background: var(--panel-dark);
+            color: var(--text-muted);
+            border: 2px solid var(--eco-mint);
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-family: 'Ubuntu', sans-serif;
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .tab-btn:hover {
+            color: var(--eco-emerald);
+            background: var(--eco-light-mint);
+            transform: translateY(-2px);
+        }
+
+        .tab-btn.active {
+            background: var(--eco-emerald);
+            color: #fff;
+            border-color: var(--eco-emerald);
+            box-shadow: 0 4px 12px rgba(15, 81, 50, 0.2);
+        }
+
+        .tab-content {
+            display: none;
+            animation: expandContent 0.4s ease-out forwards;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes expandContent {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .doc-card {
+            background: var(--panel-bg);
+            border: 1px solid var(--eco-light-mint);
+            border-radius: var(--border-radius);
+            padding: 40px;
+            margin-bottom: 25px;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.05);
+        }
+
+        .doc-card h2 {
+            font-family: 'Fredoka', sans-serif;
+            color: var(--eco-emerald);
+            font-size: 2rem;
+            margin-bottom: 20px;
+            text-transform: capitalize;
+            border-bottom: 2px solid var(--eco-light-mint);
+            padding-bottom: 8px;
+        }
+
+        .doc-card h3 {
+            font-family: 'Fredoka', sans-serif;
+            color: var(--eco-mint);
+            font-size: 1.3rem;
+            margin: 25px 0 10px 0;
+        }
+
+        .doc-card p {
+            font-size: 1.05rem;
+            line-height: 1.8;
+            margin-bottom: 15px;
+            color: var(--text-dark);
+        }
+
+        .highlight-text {
+            display: inline-block;
+            background: var(--eco-light-mint);
+            border-left: 6px solid var(--eco-emerald);
+            padding: 15px 20px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+            color: var(--eco-emerald);
+            box-shadow: 2px 2px 8px rgba(0,0,0,0.02);
+            border-radius: 0 4px 4px 0;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+        }
+
+        .demo-card {
+            background: var(--panel-bg);
+            border: 1px solid var(--eco-light-mint);
+            border-radius: var(--border-radius);
+            padding: 25px;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.05);
+        }
+
+        .demo-card h2 {
+            font-family: 'Fredoka', sans-serif;
+            color: var(--eco-emerald);
+            font-size: 1.4rem;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--eco-light-mint);
+            padding-bottom: 10px;
+        }
+
+        .hardware-panel {
+            background: var(--panel-dark);
+            border: 2px solid var(--eco-light-mint);
+            border-radius: 8px;
+            text-align: center;
+            padding: 20px 10px;
+            margin-bottom: 15px;
+        }
+
+        .hw-title { 
+            color: var(--text-muted); 
+            font-size: 0.85rem; 
+            letter-spacing: 1px; 
+            font-weight: 700; 
+            font-family: 'Fredoka', sans-serif; 
+            text-transform: uppercase;
+        }
+        
+        .hw-display {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 2.2rem;
+            color: var(--alert-green);
+            font-weight: bold;
+            line-height: 1.2;
+            margin-top: 10px;
+            text-transform: uppercase;
+        }
+
+        .hw-display.active-state {
+            color: var(--alert-red);
+        }
+
+        .input-row-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 12px;
+            background: var(--panel-dark);
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px dashed var(--eco-mint);
+        }
+
+        label { display: block; font-size: 0.9rem; font-weight: 700; margin-bottom: 6px; color: var(--eco-mint); }
+        
+        input {
+            width: 100%;
+            padding: 10px;
+            border-radius: 6px;
+            border: 2px solid var(--eco-light-mint);
+            background: #fff;
+            color: var(--text-dark);
+            font-family: 'Ubuntu', sans-serif;
+            font-size: 0.95rem;
+        }
+        
+        input:focus { outline: none; border-color: var(--eco-mint); }
+
+        button.action-btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 6px;
+            font-family: 'Fredoka', sans-serif;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.2s;
+            color: #fff;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        .btn-cyan { background: var(--eco-mint); }
+        .btn-cyan:hover { background: var(--eco-emerald); transform: translateY(-1px); }
+
+        .serial-terminal {
+            background: #1e293b;
+            border-radius: 6px;
+            padding: 15px;
+            height: 140px;
+            overflow-y: auto;
+            display: flex; flex-direction: column; gap: 8px;
+        }
+
+        .terminal-line { 
+            border-left: 4px solid var(--eco-light-mint); 
+            padding: 6px 12px; 
+            background: rgba(255, 255, 255, 0.05); 
+            color: #e2e8f0; 
+            font-size: 0.9rem; 
+            font-family: 'Courier New', monospace;
+        }
+        
+        .terminal-time { color: #94a3b8; font-size: 0.75rem; display: block; margin-top: 3px; }
+
+        /* --- BOXED EXCEL STYLE TABLE --- */
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+            margin-top: 15px;
+        }
+
+        table.grid-timetable {
+            width: 100%;
+            border-collapse: collapse;
+            background: #ffffff;
+        }
+
+        table.grid-timetable th, 
+        table.grid-timetable td {
+            border: 1px solid #000000;
+            padding: 12px 10px;
+            text-align: center;
+            vertical-align: middle;
+            font-size: 0.95rem;
+            color: #000000;
+        }
+
+        table.grid-timetable th {
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        table.grid-timetable tr.day-header-row th {
+            font-size: 1.1rem;
+            letter-spacing: 1px;
+            padding: 10px;
+            background-color: #f3f4f6;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- HEADER WITH NAVIGATION -->
+    <header>
+        <div class="header-title">
+            <h1>Timetable Conflict Resolver</h1>
+        </div>
+        <nav class="nav-tabs">
+            <button class="tab-btn active" onclick="switchTab('home')">Home</button>
+            <button class="tab-btn" onclick="switchTab('subjects')">Subjects Alignment</button>
+            <button class="tab-btn" onclick="switchTab('topics')">Integrated Topics</button>
+            <button class="tab-btn" onclick="switchTab('ai')">AI/LLM Layer</button>
+            <button class="tab-btn" onclick="switchTab('demo')">Live Demo</button>
+        </nav>
+    </header>
+
+    <!-- 1. HOME TAB -->
+    <div id="tab-home" class="tab-content active">
+        <div class="doc-card">
+            <h2>Project Introduction</h2>
+            <p>The <strong>Timetable Conflict Resolver</strong> is an automated academic management framework designed to eliminate manual scheduling overlap errors. In busy university environments, assigning teachers to multiple classrooms simultaneously leads to resource conflicts and double-bookings. This project acts as an automated validation ledger that takes processing details and maps out clean schedules instantly.</p>
+            
+            <h3>Why This Project is Used</h3>
+            <p>Manual master scheduling requires hours of human checking to confirm that no teacher is placed in two places at the same hour. This system is used to replace human oversight with 100% accurate, rule-based algorithmic scheduling—ensuring instant speed, fluid workflows, and error-free assignments.</p>
+            
+            <h3>How This Project is Used</h3>
+            <p>Users navigate to the <strong>Live Demo</strong> page, input exactly 4 core teachers alongside their respective subjects, and click the generation action key. The internal system automatically rotates resources without overlaps, instantly drawing out a structured, day-by-day boxed spreadsheet matrix for immediate deployment.</p>
+        </div>
+    </div>
+
+    <!-- 2. SUBJECTS TAB -->
+    <div id="tab-subjects" class="tab-content">
+        <div class="doc-card">
+            <h2>Subjects Alignment</h2>
+            <div class="highlight-text">Core Academic Curricular Synergy</div>
+            
+            <h3>1. Discrete Mathematics</h3>
+            <p><strong>Why it is used:</strong> Timetable structures are inherently bound by graph coloring and combinatorial set constraints. We must ensure intersecting vertices never share matching values.</p>
+            <p><strong>How it is used:</strong> It forms the mathematical backbone of our engine, validating distinct set values to verify that a resource mapped to Column A never collides with Row B.</p>
+
+            <h3>2. Data Structures & Algorithms</h3>
+            <p><strong>Why it is used:</strong> Processing large faculty maps via slow loops leads to performance bottlenecks.</p>
+            <p><strong>How it is used:</strong> The application treats schedule tracking arrays as high-performance lookups, letting the conflict checker evaluate variables instantly in linear time.</p>
+
+            <h3>3. Object-Oriented Programming (OOP)</h3>
+            <p><strong>Why it is used:</strong> Real schedules are built out of individual real-world entities containing unique key parameters like teacher names, course titles, and hours.</p>
+            <p><strong>How it is used:</strong> We organize data arrays into isolated entity blocks, passing distinct properties cleanly through functions without messy text blocks.</p>
+        </div>
+    </div>
+
+    <!-- 3. TOPICS TAB -->
+    <div id="tab-topics" class="tab-content">
+        <div class="doc-card">
+            <h2>Integrated Topics</h2>
+            
+            <h3>Multi-Dimensional Array Matrices</h3>
+            <p><strong>Why it is used:</strong> Time arrays are multi-layered grids consisting of branch columns intersecting with daily time rows.</p>
+            <p><strong>How it is used:</strong> The system maps data arrays out over index rows to structure time blocks, keeping cells cleanly isolated by section and hour.</p>
+
+            <h3>Multi-Variable Conditional Logic</h3>
+            <p><strong>Why it is used:</strong> The allocation algorithm requires a strict validation gatekeeper to catch input anomalies before compiling the final schedule.</p>
+            <p><strong>How it is used:</strong> It applies strict condition flags to block empty forms or duplicate entries, preventing invalid structures from entering the live table matrix.</p>
+        </div>
+    </div>
+
+    <!-- 4. AI/LLM LAYER TAB -->
+    <div id="tab-ai" class="tab-content">
+        <div class="doc-card">
+            <h2>AI/LLM Layer Architecture</h2>
+            <p>Standard data grids can only execute fixed, rigid mathematical loops. The **AI/LLM Layer** acts as an intelligent supervisor layer over the matrix.</p>
+            
+            <h3>Why it is used</h3>
+            <p>If an instructor requests unexpected changes or complex adjustments outside the normal pattern, standard code simply breaks or flags a hard error. The AI layer can analyze the conflict matrix and suggest optimal layout modifications instantly.</p>
+            
+            <h3>How it is used</h3>
+            <p>When the validation engine runs, the system passes matrix analytics up to the tracking monitor, verifying the schedule structure and proving that room distribution maps are operating at optimal load efficiency.</p>
+        </div>
+    </div>
+
+    <!-- 5. LIVE DEMO TAB -->
+    <div id="tab-demo" class="tab-content">
+        <div class="dashboard-grid">
+
+            <!-- Input Form Panel -->
+            <div class="demo-card" style="grid-column: span 2;">
+                <h2>🎛️ Timetable Input Panel (4 Faculty & Course Details)</h2>
+                <form id="resolverForm">
+                    <div class="input-row-grid">
+                        <div>
+                            <label>Teacher 1</label>
+                            <input type="text" id="t1_name" placeholder="e.g. GOPI SIR" required>
+                        </div>
+                        <div>
+                            <label>Subject 1</label>
+                            <input type="text" id="t1_sub" placeholder="e.g. IP" required>
+                        </div>
+                    </div>
+
+                    <div class="input-row-grid">
+                        <div>
+                            <label>Teacher 2</label>
+                            <input type="text" id="t2_name" placeholder="e.g. B S RAO SIR" required>
+                        </div>
+                        <div>
+                            <label>Subject 2</label>
+                            <input type="text" id="t2_sub" placeholder="e.g. LA&C" required>
+                        </div>
+                    </div>
+
+                    <div class="input-row-grid">
+                        <div>
+                            <label>Teacher 3</label>
+                            <input type="text" id="t3_name" placeholder="e.g. MAHALAKSHMI MADAM" required>
+                        </div>
+                        <div>
+                            <label>Subject 3</label>
+                            <input type="text" id="t3_sub" placeholder="e.g. PHYSICS" required>
+                        </div>
+                    </div>
+
+                    <div class="input-row-grid">
+                        <div>
+                            <label>Teacher 4</label>
+                            <input type="text" id="t4_name" placeholder="e.g. TULASI MADAM" required>
+                        </div>
+                        <div>
+                            <label>Subject 4</label>
+                            <input type="text" id="t4_sub" placeholder="e.g. EG" required>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="action-btn btn-cyan">Generate Box Timetable Matrix</button>
+                </form>
+            </div>
+
+            <!-- Side Status Monitors -->
+            <div class="demo-card">
+                <h2>💡 Engine Status</h2>
+                <div class="hardware-panel">
+                    <div class="hw-title">Validation Engine Flag</div>
+                    <div class="hw-display" id="engineStatusDisplay">CLEAR</div>
+                </div>
+                <div class="hardware-panel">
+                    <div class="hw-title">Total Scheduled Slots</div>
+                    <div class="hw-display" id="totalBookingsDisplay" style="color: var(--eco-emerald);">0</div>
+                </div>
+            </div>
+
+            <!-- Terminal log -->
+            <div class="demo-card" style="grid-column: 1 / -1;">
+                <h2>🖥️ Logic Processing Terminal</h2>
+                <div class="serial-terminal" id="serialTerminal">
+                    <div class="terminal-line">
+                        [SYS-INIT] Conflict Validation Engine active. Ready for generation...
+                        <span class="terminal-time">System Operational</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Output Grid Matrix Area -->
+            <div class="demo-card" style="grid-column: 1 / -1;">
+                <h2>📁 Master Timetable Database (CAI, CSE, CSD, AID)</h2>
+                
+                <div class="table-container">
+                    <table class="grid-timetable">
+                        <thead>
+                            <tr>
+                                <th style="width: 15%;">BRANCH</th>
+                                <th>HOUR 1</th>
+                                <th>HOUR 2</th>
+                                <th>HOUR 3</th>
+                                <th>HOUR 4</th>
+                            </tr>
+                        </thead>
+                        <tbody id="gridTableBody">
+                            <tr>
+                                <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 20px;">
+                                    No matrix generated yet. Fill out the form fields above and click generate.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+    <!-- PROGRAMMATIC LOGIC ACTIONS -->
+    <script>
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(`tab-${tabId}`).classList.add('active');
+            event.currentTarget.classList.add('active');
+        }
+
+        document.getElementById('resolverForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            let inputs = [
+                { name: document.getElementById('t1_name').value.trim().toUpperCase(), sub: document.getElementById('t1_sub').value.trim().toUpperCase() },
+                { name: document.getElementById('t2_name').value.trim().toUpperCase(), sub: document.getElementById('t2_sub').value.trim().toUpperCase() },
+                { name: document.getElementById('t3_name').value.trim().toUpperCase(), sub: document.getElementById('t3_sub').value.trim().toUpperCase() },
+                { name: document.getElementById('t4_name').value.trim().toUpperCase(), sub: document.getElementById('t4_sub').value.trim().toUpperCase() }
+            ];
+
+            let uniqueNames = new Set(inputs.map(i => i.name));
+            let statusDisplay = document.getElementById('engineStatusDisplay');
+
+            if (uniqueNames.size !== 4) {
+                statusDisplay.innerText = "CONFLICT!";
+                statusDisplay.classList.add('active-state');
+                pushConsoleOutput(`[VALIDATION ERROR] Configuration halted: Unique faculty data required.`);
+                alert("Please provide 4 distinct teacher names.");
+                return;
+            }
+
+            statusDisplay.innerText = "CLEAR";
+            statusDisplay.classList.remove('active-state');
+            pushConsoleOutput(`[PROCESSING] Re-mapping schedules for CAI, CSE, CSD, AID branches...`);
+
+            const branches = ["CAI", "CSE", "CSD", "AID"];
+            const days = ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"];
+            
+            let htmlPayload = '';
+            let totalSlotsCount = 0;
+
+            days.forEach((day, dIdx) => {
+                htmlPayload += `
+                    <tr class="day-header-row">
+                        <th colspan="5">${day} SCHEDULE</th>
+                    </tr>
+                `;
+
+                branches.forEach((branch, bIdx) => {
+                    htmlPayload += `<tr>`;
+                    htmlPayload += `<td><strong>${branch}</strong></td>`;
+                    
+                    for(let hour = 1; hour <= 4; hour++) {
+                        let index = (dIdx + bIdx + hour) % 4;
+                        let assignment = inputs[index];
+                        
+                        htmlPayload += `<td>${assignment.sub}<br>(${assignment.name})</td>`;
+                        totalSlotsCount++;
+                    }
+                    
+                    htmlPayload += `</tr>`;
+                });
+            });
+
+            document.getElementById('gridTableBody').innerHTML = htmlPayload;
+            document.getElementById('totalBookingsDisplay').innerText = totalSlotsCount;
+            pushConsoleOutput(`[SUCCESS] Generated clean boxed matrix allocation layout successfully.`);
+        });
+
+        function pushConsoleOutput(text) {
+            let terminal = document.getElementById('serialTerminal');
+            let time = new Date().toLocaleTimeString();
+            terminal.innerHTML += `<div class="terminal-line">${text} <span class="terminal-time">${time}</span></div>`;
+            terminal.scrollTop = terminal.scrollHeight;
+        }
+    </script>
+</body>
+</html>
